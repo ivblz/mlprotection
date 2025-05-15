@@ -6,7 +6,7 @@ def readme():
 
 setup(
     name='mlprotection',
-    version='0.1.2',
+    version='0.1.3',
     author='ivblz',
     description='Библиотека для обнаружения аномалий и потенциально "отравленных" данных в датасетах',
     long_description=readme(),
