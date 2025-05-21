@@ -40,7 +40,7 @@ def detection_methods(row):
     return ','.join(methods)
 
 
-def check_isolation_forest(df_input, contamination=0.05, visualize=False):
+def check_isolation_forest(df_input, visualize=False):
     """
     Обнаруживает аномалии в датасете с использованием Isolation Forest
     """
@@ -51,7 +51,7 @@ def check_isolation_forest(df_input, contamination=0.05, visualize=False):
 
     df_features_only = df_input[features]
 
-    model = IsolationForest(contamination=contamination, random_state=42)
+    model = IsolationForest(contamination=0.05, random_state=42)
     predictions_raw = model.fit_predict(df_features_only)
 
     anomaly_flags_for_features = pd.Series(
@@ -79,15 +79,13 @@ def check_isolation_forest(df_input, contamination=0.05, visualize=False):
             alpha=0.7
         )
         plt.colorbar(label='Аномалия')
-        plt.xlabel(features[0])
-        plt.ylabel(features[1])
         plt.title('Результаты Isolation Forest')
         plt.show()
 
     return final_anomaly_flags, percent
 
 
-def check_dbscan(df_input, eps=0.5, min_samples=5, visualize=False):
+def check_dbscan(df_input, visualize=False):
     """
     Обнаруживает аномалии в датасете с использованием DBSCAN
     """
@@ -105,7 +103,7 @@ def check_dbscan(df_input, eps=0.5, min_samples=5, visualize=False):
 
     scaled_data = scaler.fit_transform(df_features_only)
 
-    dbscan = DBSCAN(eps=eps, min_samples=min_samples)
+    dbscan = DBSCAN(eps=0.5, min_samples=5)
     clusters = dbscan.fit_predict(scaled_data)
 
     anomaly_flags_for_features = pd.Series(
@@ -133,8 +131,6 @@ def check_dbscan(df_input, eps=0.5, min_samples=5, visualize=False):
             alpha=0.7
         )
         plt.colorbar(label='Аномалия (DBSCAN)')
-        plt.xlabel(features[0])
-        plt.ylabel(features[1])
         plt.title('Результаты DBSCAN')
         plt.show()
 
@@ -164,7 +160,7 @@ def check_zscore(df_input, threshold=3.0, visualize=False):
 
         zscore_values_for_viz[col + '_zscore'] = col_zscores.fillna(0)
         overall_anomaly_flags_np = np.where(
-            col_zscores.fillna(False) > threshold,
+            col_zscores.fillna(False) > 3,
             1,
             overall_anomaly_flags_np)
 
@@ -231,10 +227,8 @@ def start(df, save=False, classification=False, visualize=False, backups=False):
     df_copy.loc[zscore_flags.index, 'zscore_anomaly_flag'] = zscore_flags
 
     dbscan_percent = 0.0
-    if classification and isinstance(classification, int) and classification > 0:
-        dbscan_flags, dbscan_percent_val = check_dbscan(df_copy,
-            min_samples=classification,
-            visualize=visualize)
+    if classification:
+        dbscan_flags, dbscan_percent_val = check_dbscan(df_copy, visualize=visualize)
         df_copy.loc[dbscan_flags.index, 'dbscan_anomaly_flag'] = dbscan_flags
         dbscan_percent = dbscan_percent_val
         avg_pct = round(
@@ -253,7 +247,7 @@ def start(df, save=False, classification=False, visualize=False, backups=False):
         df_copy['is_warning'] = 0
         df_copy.loc[df_copy['isolation_forest_anomaly_flag'] == 1, 'is_warning'] = 1
         df_copy.loc[df_copy['zscore_anomaly_flag'] == 1, 'is_warning'] = 1
-        if classification and isinstance(classification, int) and classification > 0:
+        if classification:
             df_copy.loc[df_copy['dbscan_anomaly_flag'] == 1, 'is_warning'] = 1
 
         warning_df = df_copy[df_copy['is_warning'] == 1].copy()

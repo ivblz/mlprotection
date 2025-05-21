@@ -4,7 +4,7 @@
 
 ## Информация о пакете
 
-- Версия: 0.1.3
+- Версия: 0.1.5
 - Автор: ivblz
 - Требования: Python >= 3.6
 
@@ -33,23 +33,20 @@ pip install mlprotection
 ## Использование
 
 ```python
+import pandas as pd
 import mlprotection
 
 # Загрузите ваш датасет
 df = pd.read_csv('ваш_датасет.csv')
 
 # Запустите проверку
-# classification=True/False или число min_samples для DBSCAN
+# classification=True/False для DBSCAN
 # save=True для сохранения подозрительных данных в `warning_data.csv` и обработанных данных в `treat_data.csv`
 # visualize=True для отрисовки графиков (если возможно)
 # backups=True для создания резервной копии исходного датасета
-mlprotection.start(df, classification=False, save=True, visualize=False, backups=True)
+mlprotection.start(df, classification=False, save=True, visualize=True, backups=False)
 ```
 
 ## Функции
 
 *   `start()`: Основная функция для запуска всех проверок.
-*   `check_isolation_forest()`: Проверка с использованием Isolation Forest.
-*   `check_dbscan()`: Проверка с использованием DBSCAN (полезна для кластеризованных данных).
-*   `check_zscore()`: Проверка на основе Z-оценки.
-*   `create_backup()`: Создание резервной копии датасета. 
